@@ -24,25 +24,25 @@ if (!PORT) {
     process.exit(1); 
 }
 
-const corsOptions = {
-    origin: (origin: any, callback: any) => {
-        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['*'];
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: ['Content-Type', 'Authorization']
-};
+// const corsOptions = {
+//     origin: (origin: any, callback: any) => {
+//         const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['*'];
+//         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('Not allowed by CORS'));
+//         }
+//     },
+//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// };
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.options("", cors(corsOptions));
+// app.options("", cors());
 app.use((req, res, next) => {
     console.log('Origin:', req.headers.origin);
     next();
