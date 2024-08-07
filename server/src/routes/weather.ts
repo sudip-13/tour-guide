@@ -33,9 +33,10 @@ weatherRouter.get("/weather", async (req: Request, res: Response) => {
             const weatherDescription = forecast.weather[0].description;
             const feelsLike=forecast.main.feels_like
             const humidity=forecast.main.humidity;
+            const logo = forecast.weather[0].main;
+            
 
-
-            res.status(200).send({ "Temprature": temperature, "WeatherDescription": weatherDescription ,"feelsLike":feelsLike,"humidity":humidity})
+            res.status(200).send({ "Temprature": temperature, "WeatherDescription": logo ,"feelsLike":feelsLike,"humidity":humidity})
         } else {
             console.error('Forecast not found for the specified date');
             res.status(404).send({ "message": "Forecast not found" })
