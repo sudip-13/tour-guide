@@ -52,45 +52,28 @@ export async function findTrains(parameters: Parameters): Promise<any> {
             const trainDataArray = response.data.data;
 
             if (trainDataArray.length > 0) {
-                const res = trainDataArray.map((trainDataObj: TrainData) => {
+                const res = trainDataArray.slice(0, 10).map((trainDataObj: TrainData) => {
                     const trainData = trainDataObj.train_base;
 
-                    [
-                        {
-                            'text': {
-                                'text': [
-                                    'Sample text'
-                                ]
-                            }
-                        },
-                        {
-                            'payload': {
-                                'richContent': [
+                    return {
+                        'payload': {
+                            "richContent": [
+                                [
                                     {
                                         "type": "accordion",
-                                        "title": `${trainData.train_name} (${trainData.train_no})`,
-                                        "subtitle": `From ${trainData.from_stn_name} to ${trainData.to_stn_name}`,
-                                        "image": {
-                                            "src": {
-                                                "rawUrl": "https://example.com/images/logo.png"
-                                            }
-                                        },
-                                        "text": `
-                                        Source: ${trainData.source_stn_name} (${trainData.source_stn_code})\n
-                                        Destination: ${trainData.dstn_stn_name} (${trainData.dstn_stn_code})\n
-                                        Departure: ${trainData.from_time}\n
-                                        Arrival: ${trainData.to_time}\n
-                                    `
+                                        "title": `Train: ${trainData.train_name} (${trainData.train_no})`,
+                                        "subtitle": `From ${trainData.source_stn_name} to ${trainData.dstn_stn_name}`,
+                                        "text": `Departure: ${trainData.from_time} | Arrival: ${trainData.to_time} | Travel Time: ${trainData.travel_time} | Running Days: ${trainData.running_days}`
                                     }
                                 ]
-                            }
+                            ]
                         }
-                    ]
-
-
+                    };
                 });
-                return res
 
+                return {
+                    fulfillmentMessages: res
+                };
             } else {
                 return {
                     fulfillmentMessages: [
