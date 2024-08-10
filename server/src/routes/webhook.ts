@@ -1,8 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { findTrains } from '../controllers/webhook';
+import { findTrains,welcome,fetchLiveLocation } from '../controllers/webhook';
 
 export interface Parameters {
     Station: string[];
+    TrainNo:string
 }
 
 interface QueryResult {
@@ -20,6 +21,8 @@ const webHookRouter: Router = Router();
 
 const intent_handler: { [key: string]: (parameters: Parameters) => Promise<any> } = {
     'search.train': findTrains,
+    'Default Welcome Intent':welcome,
+    'fetch.livelocation':fetchLiveLocation
 };
 
 webHookRouter.post('/chatbot', async (req: Request<{}, {}, WebhookRequestBody>, res: Response, next: NextFunction) => {

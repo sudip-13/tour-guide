@@ -127,6 +127,25 @@ router.get("/pnrstatus", async (req: Request, resp: Response) => {
     console.log(error);
   }
 });
+router.get("/livelocation", async (req: Request, resp: Response) => {
+  const trainno = req.query.train_no as string;
+  try {
+    let URL_Train = `https://rappid.in/apis/train.php?train_no=${trainno}`;
+
+    const userAgent = new UserAgent();
+    const response = await fetch(URL_Train, {
+      method: "GET",
+      headers: { "User-Agent": userAgent.toString() },
+    });
+    let data = await response.json();
+    // let json = prettify(data);
+    resp.send(data);
+  } catch (error: any) {
+    console.log(error);
+    resp.send(error);
+
+  }
+});
 
 
 

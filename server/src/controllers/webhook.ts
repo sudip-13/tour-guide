@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import stationData from '../../data/stationcode.json';
+
 import { Parameters } from '../routes/webhook';
 import axios from 'axios';
 
@@ -71,8 +72,10 @@ export async function findTrains(parameters: Parameters): Promise<any> {
                     };
                 });
 
+
                 return {
                     fulfillmentMessages: res
+
                 };
             } else {
                 return {
@@ -103,6 +106,154 @@ export async function findTrains(parameters: Parameters): Promise<any> {
     } catch (err) {
         console.error('Error occurred while fetching train data:', err);
 
+        return {
+            fulfillmentMessages: [
+                {
+                    text: {
+                        text: [
+                            'An error occurred while processing your request. Please try again later.'
+                        ]
+                    }
+                }
+            ]
+        };
+    }
+}
+
+
+export async function welcome(parameters: Parameters): Promise<any> {
+
+    try {
+        const res = {
+            "fulfillmentMessages": [
+                {
+                    'text': {
+                        'text': [
+                            "Welcome to tourism  🎉 I'm your friendly assistant, here to help you with anything you need.Whether you have questions, need support, or just want to chat, I'm here for you 24/7"
+                        ]
+                    }
+                },
+                {
+                    "payload": {
+                        "richContent": [
+                            [
+                                {
+                                    "type": "chips",
+                                    "options": [
+                                        {
+                                            "text": "Find Train",
+                                            "image": {
+                                                "src": {
+                                                    "rawUrl": "https://png.pngtree.com/png-vector/20230109/ourmid/pngtree-train-on-a-white-background-png-image_6556767.png"
+                                                }
+                                            },
+
+                                        },
+                                        {
+                                            "text": "See live location",
+                                            "image": {
+                                                "src": {
+                                                    "rawUrl": "https://img.freepik.com/premium-vector/live-location-icon_874723-47.jpg"
+                                                }
+                                            },
+
+                                        }
+                                    ]
+                                }
+                            ]
+                        ]
+                    }
+                }
+            ]
+        };
+
+        return res;
+    } catch (err) {
+        console.error('Error occurred:', err);
+
+        return {
+            "fulfillmentMessages": [
+                {
+                    "text": {
+                        "text": [
+                            'An error occurred while processing your request. Please try again later.'
+                        ]
+                    }
+                }
+            ]
+        };
+    }
+}
+
+
+
+export async function fetchLiveLocation(parameters: Parameters): Promise<any> {
+    try {
+        const train_No = parameters.TrainNo;
+        if (train_No) {
+            const response = await axios.get(`${process.env.SERVER_URL}/trains/livelocation/?train_no=${train_No}`);
+            const locationData = response.data;
+
+            if (locationData.success) {
+                const richContent = [
+                    {
+                        type: "accordion",
+                        title: locationData.train_name,
+                        subtitle: locationData.updated_time,
+                     
+             
+                    }
+                ];
+
+                locationData.data.forEach((station: any) => {
+                    richContent.push({
+                        type: "info",
+                        title: `${station.station_name} (Platform: ${station.platform})`,
+                        subtitle: `Arrival: ${station.timing} | Distance: ${station.distance} | Halt: ${station.halt} | Delay: ${station.delay}`,
+                      
+                       
+                    });
+                });
+
+                return {
+                    fulfillmentMessages: [
+                        {
+                            payload: {
+                                richContent: [richContent]
+                            }
+                        }
+                    ]
+                };
+            } else {
+                return {
+                    fulfillmentMessages: [
+                        {
+                            text: {
+                                text: [
+                                    'No data found for the provided train number.'
+                                ]
+                            }
+                        }
+                    ]
+                };
+            }
+        } else {
+            return {
+                fulfillmentMessages: [
+                    {
+                        text: {
+                            text: [
+                                'Train number is missing. Please provide a valid train number.'
+                            ]
+                        }
+                    }
+                ]
+
+            }
+        };
+    }
+    catch (err) {
+        console.error('Error occurred:', err);
         return {
             fulfillmentMessages: [
                 {
