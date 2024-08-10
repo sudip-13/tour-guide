@@ -60,7 +60,7 @@ const WeatherDetails: React.FC<Props> = () => {
                 console.error("Fetch failed for source city", e);
             }
         },
-        [setSourceWeatherData, from]
+        [setSourceWeatherData, date, from]
     );
 
     const handleFetchWeatherOfDestinationCity = useCallback(
@@ -88,11 +88,12 @@ const WeatherDetails: React.FC<Props> = () => {
                 console.error("Fetch failed for destination city", e);
             }
         },
-        [setDestinationWeatherData, to]
+        [setDestinationWeatherData, date, to]
     );
 
     const getWeatherAnimation = (weatherDescription: string) => {
-        switch (weatherDescription.toLowerCase()) {
+        console.log(weatherDescription);
+        switch (weatherDescription) {
             case "Clear":
                 return sunny;
             case "Clouds":
@@ -113,7 +114,7 @@ const WeatherDetails: React.FC<Props> = () => {
     useEffect(() => {
         handleFetchWeatherOfSourceCity();
         handleFetchWeatherOfDestinationCity();
-    }, [])
+    }, [handleFetchWeatherOfSourceCity, handleFetchWeatherOfDestinationCity])
 
     return (
         <>

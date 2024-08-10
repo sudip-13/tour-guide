@@ -1,20 +1,20 @@
 "use client"
-
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
+import { auth } from "@/lib/firebase/config";
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { RegisterLink, LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { Button } from "@nextui-org/react";
 import logo from "@/public/logo.jpeg"
 import Image from 'next/image'
-import { Console } from "console";
+const LoginForm = lazy(() => import("./loginform"))
 
 export default function Navbar() {
 
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const router = useRouter();
-    const { user } = useKindeBrowserClient();
+    const [user] = useAuthState(auth);
+    const [signOut] = useSignOut(auth);
     const [name, setName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
@@ -23,15 +23,14 @@ export default function Navbar() {
     const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
-    const [currentUrl, setCurrentUrl] = useState<string>('');
 
-    const closeDropdown = () => {
+    const closeDropdown = useCallback(() => {
         setShowDropdown(false);
-    };
+    }, []);
 
-    const closeSidebar = () => {
+    const closeSidebar = useCallback(() => {
         setShowMobileMenu(false);
-    }
+    }, []);
 
     const toggleDropdown = () => {
         setShowDropdown(!showDropdown);
@@ -40,6 +39,15 @@ export default function Navbar() {
     const toggleMobileMenu = () => {
         setShowMobileMenu(!showMobileMenu);
     }
+
+    const handleLogout = async () => {
+        try {
+            const res = await signOut();
+            console.log(res);
+        } catch (error) {
+            console.log("firebase error", error);
+        }
+    };
 
     const handleSendUserInfo = useCallback(async () => {
         try {
@@ -68,9 +76,9 @@ export default function Navbar() {
 
     useEffect(() => {
         if (user) {
-            setName(`${user.given_name} ${user.family_name}`)
+            setName(`${user.displayName}`)
             setEmail(`${user.email}`)
-            setUserId(`${user.id}`);
+            setUserId(`${user.uid}`);
             setisLoggedin(true)
         } else {
             setisLoggedin(false)
@@ -114,10 +122,10 @@ export default function Navbar() {
 
     return (
         <>
-            <nav id="navbar" className="fixed w-screen top-0 opacity-100 z-50 font-Montserrat">
+            <Suspense>{!isloggedin && <LoginForm />}</Suspense>
+            <nav id="navbar" className="fixed w-screen top-0 opacity-100 z-30 font-Montserrat">
                 <div className="flex items-center justify-between pl-4 md:pl-10 p-3">
                     <div className="flex items-center justify-center">
-                        {/* <img className="rounded-full" height={50} width={50} src={logo} alt="Logo" /> */}
                         <Image
                             className="rounded-full"
                             src={logo}
@@ -125,7 +133,7 @@ export default function Navbar() {
                             height={40}
                             alt="Logo"
                         />
-                        <p className="font-bold ml-5 text-xl">TOURISM</p>
+                        <p className="font-bold ml-5 text-white text-xl">TOURISM</p>
                     </div>
                     <ul className="hidden md:flex md:mr-20 md:ml-40 space-x-5">
                         <li onClick={() => router.push("/")} className="text-rose-500 cursor-pointer">
@@ -166,38 +174,24 @@ export default function Navbar() {
                             </p>
                         ) : (
                             <ul className="flex space-x-5">
-                                <li>
-                                    <LoginLink postLoginRedirectURL="/">
-                                        <button
-                                            className="flex items-center gap-2 z-10 cursor-pointer relative px-8 py-2 rounded-md bg-inherit isolation-auto border-2 border-lime-500 before:absolute before:w-full before:transition-all before:duration-700 before:hover:w-full before:-left-full before:hover:left-0 before:rounded-full before:bg-lime-500 before:-z-10 before:aspect-square before:hover:scale-150 overflow-hidden before:hover:duration-300"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#e8eaed"><path d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z" /></svg>
-                                            Login
-                                        </button>
-                                    </LoginLink >
-
-                                </li >
-                                <li>
-                                    <RegisterLink postLoginRedirectURL="/">
-                                        <button
-                                            className="flex gap-2 z-10 cursor-pointer relative px-8 py-2 rounded-md bg-inherit isolation-auto border-2 border-rose-500 before:absolute before:w-full before:transition-all before:duration-700 before:hover:w-full before:-left-full before:hover:left-0 before:rounded-full before:bg-rose-500 before:-z-10 before:aspect-square before:hover:scale-150 overflow-hidden before:hover:duration-300"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-360-80q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0-80Zm0 400Z" /></svg>
-                                            Signup
-                                        </button>
-                                    </RegisterLink>
+                                <li id="login">
+                                    <button
+                                        onClick={() => setisLoggedin(false)}
+                                        className="flex items-center gap-2 z-10 cursor-pointer relative px-8 py-2 rounded-md bg-inherit isolation-auto border-2 border-lime-500 before:absolute before:w-full before:transition-all before:duration-700 before:hover:w-full before:-left-full before:hover:left-0 before:rounded-full before:bg-lime-500 before:-z-10 before:aspect-square before:hover:scale-150 overflow-hidden before:hover:duration-300"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#e8eaed"><path d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z" /></svg>
+                                        <span>Login / Signup</span>
+                                    </button>
                                 </li>
                             </ul >
                         )}
                     </div>
-                    <div className="fixed right-14 top-24">
+                    <div onClick={() => handleLogout()} id="logout" className="cursor-pointer fixed right-14 top-24">
                         {showDropdown &&
-                            <LogoutLink>
-                                <p className="flex space-x-2 hover:bg-red-600 p-2 px-4 rounded-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" /></svg>
-                                    <span>Logout</span>
-                                </p>
-                            </LogoutLink>
+                            <p className="flex space-x-2 hover:bg-red-600 p-2 px-4 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" /></svg>
+                                <span>Logout</span>
+                            </p>
                         }
                     </div>
 
@@ -227,7 +221,7 @@ export default function Navbar() {
 
                 {/* Mobile menu */}
                 {showMobileMenu && (
-                    <div id="sidebar" ref={sidebarRef} className="md:hidden bg-[#000435]  backdrop-blur-md transition-transform duration-400 ease-in-out fixed right-0 top-0 h-screen border w-[18rem]">
+                    <div id="sidebar" ref={sidebarRef} className="md:hidden bg-[#000435] text-slate-500  backdrop-blur-md transition-transform duration-400 ease-in-out fixed right-0 top-0 h-screen border w-[18rem]">
                         <svg onClick={() => closeSidebar()} className="p-1 right-1 fixed mt-2" xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#e8eaed"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>
                         <ul className="pt-20 pl-5 space-y-14 text-rose">
                             <li className="flex space-x-3 p-2">
@@ -235,12 +229,11 @@ export default function Navbar() {
                                     <p className="flex space-x-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FF1D8D"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" /></svg>
                                         <span>{name}</span>
-                                        {/* Logout banate hobek */}
                                     </p>
                                 ) : (
-                                    <p className="flex space-x-3 justify-center items-center">
+                                    <p id="login" className="flex space-x-3 justify-center items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FF1D8D"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" /></svg>
-                                        <LoginLink><Button radius="md">Login</Button></LoginLink>
+                                        <Button radius="md">Login</Button>
                                     </p>
                                 )}
                             </li>
@@ -262,11 +255,12 @@ export default function Navbar() {
                                     Flight
                                 </p>
                             </li>
-                            <li>
+                            <li onClick={() => handleLogout()} id="logout">
                                 {isloggedin &&
-                                    <LogoutLink><Button className="flex space-x-3" color="danger" radius="md">
+                                    <Button onClick={() => handleLogout()} className=" cursor-pointer flex space-x-3" color="danger" radius="md">
                                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" /></svg>
-                                        Logout</Button></LogoutLink>
+                                        Logout
+                                    </Button>
                                 }
                             </li>
                         </ul>

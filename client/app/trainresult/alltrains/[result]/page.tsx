@@ -1,5 +1,4 @@
 "use client";
-
 import {
     Table,
     TableHeader,
@@ -16,7 +15,7 @@ import {
     useDisclosure
 } from "@nextui-org/react";
 const WeatherDetails = lazy(() => import("@/components/weather"))
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import loadingAnimation from "@/lottie/loader.json";
@@ -24,6 +23,7 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 import dynamic from "next/dynamic";
 import notFoundAnimation from "@/lottie/trainnotfound.json";
 import NextTopLoader from "nextjs-toploader";
+import { auth } from "@/lib/firebase/config";
 
 
 const TrainResult = () => {
@@ -31,7 +31,7 @@ const TrainResult = () => {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
     const date = searchParams.get("date");
-    const { user } = useKindeBrowserClient();
+    const [user] = useAuthState(auth);
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [currentStation, setCurrentStation] = useState<string>("");
@@ -66,7 +66,7 @@ const TrainResult = () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: user?.id,
+                    id: user?.uid,
                     train_no: train_no.train_no,
                     train_name: train_name
                 })
@@ -121,7 +121,7 @@ const TrainResult = () => {
         } catch (error) {
             console.error("Fetch failed", error);
         }
-    }, [from, to, setTrainResult, setShowNoTrain, setIsLoading]);
+    }, [from, to, setTrainResult, setShowNoTrain, setIsLoading, date]);
 
     const handleGetTrainRoute = useCallback(
         async (train_no: any, train_name: any) => {
@@ -148,7 +148,7 @@ const TrainResult = () => {
                 handleDataSendForTrainHistory(train_no, train_name);
             }
         },
-        [setTrainRoute, handleDataSendForTrainHistory]
+        [setTrainRoute, handleDataSendForTrainHistory, onOpen]
     );
 
     const handleFetchLivedata = async (train_no: any, train_name: any) => {
@@ -194,7 +194,7 @@ const TrainResult = () => {
 
     useEffect(() => {
         handleSearchTrain();
-    }, [from, to, setTrainResult]);
+    }, [from, to, setTrainResult, handleSearchTrain]);
 
     return (
         <>
