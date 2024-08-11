@@ -24,7 +24,12 @@ interface getFlightstod {
   children?: number;
   infants?: number;
 }
-
+const config = {
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+  }
+};
 export const getAmadeusData = (params: GetAmadeusDataParams): GetAmadeusDataReturn => {
 
   const { keyword = "", page = 0, city = true, airport = true } = params;
@@ -42,7 +47,9 @@ export const getAmadeusData = (params: GetAmadeusDataParams): GetAmadeusDataRetu
   const out = axios.get(
     `https://tour-guide-r6pt.onrender.com/flight/api/airports/?keyword=${searchQuery}&page=${page}&subType=${subTypeCheck}`,
     {
-      cancelToken: source.token
+      cancelToken: source.token,
+      ...config
+      
     }
   );
 
@@ -62,7 +69,8 @@ export const getFlightstod = (params: getFlightstod): GetAmadeusDataReturn => {
   const out = axios.get(
     `https://tour-guide-r6pt.onrender.com/flight/api/flightavailabilities/?sourceCode=${sourceCode}&destinationCode=${destinationCode}&selectedDate=${selectedDate}&adults=${adults}&children=${children}&infants=${infants}`,
     {
-      cancelToken: source.token
+      cancelToken: source.token,
+      ...config
     }
   );
 
