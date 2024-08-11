@@ -40,7 +40,7 @@ export const getAmadeusData = (params: GetAmadeusDataParams): GetAmadeusDataRetu
 
 
   const out = axios.get(
-    `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/flight/api/airports/?keyword=${searchQuery}&page=${page}&subType=${subTypeCheck}`,
+    `https://tour-guide-r6pt.onrender.com/flight/api/airports/?keyword=${searchQuery}&page=${page}&subType=${subTypeCheck}`,
     {
       cancelToken: source.token
     }
@@ -60,7 +60,7 @@ export const getFlightstod = (params: getFlightstod): GetAmadeusDataReturn => {
 
 
   const out = axios.get(
-    `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/flight/api/flightavailabilities/?sourceCode=${sourceCode}&destinationCode=${destinationCode}&selectedDate=${selectedDate}&adults=${adults}&children=${children}&infants=${infants}`,
+    `https://tour-guide-r6pt.onrender.com/flight/api/flightavailabilities/?sourceCode=${sourceCode}&destinationCode=${destinationCode}&selectedDate=${selectedDate}&adults=${adults}&children=${children}&infants=${infants}`,
     {
       cancelToken: source.token
     }

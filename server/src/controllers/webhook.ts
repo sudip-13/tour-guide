@@ -129,7 +129,7 @@ export async function welcome(parameters: Parameters): Promise<any> {
                 {
                     'text': {
                         'text': [
-                            "Welcome to tourism  🎉 I'm your friendly assistant, here to help you with anything you need.Whether you have questions, need support, or just want to chat, I'm here for you 24/7"
+                            "Welcome to tourism  🎉 I'm your friendly assistant, here to help you with anything you need.Whether you have questions, need support, or just want to chat, I'm here for you 24X7"
                         ]
                     }
                 },
